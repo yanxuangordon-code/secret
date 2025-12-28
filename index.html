@@ -16,7 +16,11 @@
             background: #000;
             color: #ff0000;
             overflow: hidden;
-            cursor: none;
+            cursor: none !important;
+        }
+
+        * {
+            cursor: none !important;
         }
 
         .warning-screen {
@@ -252,13 +256,16 @@
         let popups = [];
         let escCount = 0;
         let countdown = 10;
+        let prankActive = true;
+        let intervals = [];
 
         // Countdown timer
-        setInterval(() => {
+        intervals.push(setInterval(() => {
+            if (!prankActive) return;
             countdown--;
             if (countdown < 0) countdown = 10;
             document.getElementById('countdown').textContent = countdown;
-        }, 1000);
+        }, 1000));
 
         // Create Mac-style popup
         function createPopup() {
@@ -306,6 +313,7 @@
         }
 
         function tryClose(element) {
+            if (!prankActive) return;
             // Spawn 2 more popups when trying to close
             createPopup();
             createPopup();
@@ -345,12 +353,50 @@
         setTimeout(() => createPopup(), 2000);
         setTimeout(() => createPopup(), 3000);
         setTimeout(() => createPopup(), 4000);
+        
+        // Create real browser alert popups
+        setTimeout(() => {
+            if (!prankActive) return;
+            alert('⚠️ CRITICAL ERROR: Virus detected on your system!');
+        }, 3500);
+        
+        setTimeout(() => {
+            if (!prankActive) return;
+            if (confirm('❌ System32 is being deleted! Click OK to stop the process.')) {
+                alert('🚨 ERROR: Unable to stop deletion process!');
+                createPopup();
+                createPopup();
+            } else {
+                alert('⚠️ Deletion will continue in background!');
+                createPopup();
+            }
+        }, 6000);
+        
+        setTimeout(() => {
+            if (!prankActive) return;
+            alert('🔒 All your files have been encrypted! Pay 500 Bitcoin to decrypt.');
+        }, 9000);
 
         // Prevent context menu
         document.addEventListener('contextmenu', e => e.preventDefault());
 
+        // Disable all mouse clicks on the page
+        document.addEventListener('click', (e) => {
+            if (!prankActive) return;
+            e.preventDefault();
+            e.stopPropagation();
+            createPopup();
+        }, true);
+
+        document.addEventListener('mousedown', (e) => {
+            if (!prankActive) return;
+            e.preventDefault();
+            e.stopPropagation();
+        }, true);
+
         // Prevent closing the tab/window
         window.addEventListener('beforeunload', (e) => {
+            if (!prankActive) return;
             e.preventDefault();
             e.returnValue = '⚠️ WARNING: Your files are being encrypted! Do not close this window!';
             return '⚠️ WARNING: Your files are being encrypted! Do not close this window!';
@@ -359,6 +405,7 @@
         // Prevent back button
         history.pushState(null, null, location.href);
         window.addEventListener('popstate', () => {
+            if (!prankActive) return;
             history.pushState(null, null, location.href);
             createPopup();
         });
@@ -368,20 +415,48 @@
             if (e.key === 'Escape') {
                 escCount++;
                 if (escCount >= 5) {
+                    // Disable the prank
+                    prankActive = false;
+                    
+                    // Clear all intervals
+                    intervals.forEach(interval => clearInterval(interval));
+                    
+                    // Remove all popups
+                    popups.forEach(popup => popup.remove());
+                    popups = [];
+                    
                     // Remove the beforeunload listener to allow closing
                     window.onbeforeunload = null;
+                    
+                    // Restore cursor
+                    document.body.style.cursor = 'default';
+                    document.querySelectorAll('*').forEach(el => el.style.cursor = 'default');
+                    
                     alert('Prank over! You can now close the page.');
-                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#0f0;font-size:48px;font-family:monospace;text-align:center;flex-direction:column;"><div>YOU ESCAPED! 😄</div><div style="font-size:24px;margin-top:20px;">You can now close this page</div></div>';
+                    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#0f0;font-size:48px;font-family:monospace;text-align:center;flex-direction:column;cursor:default;"><div>YOU ESCAPED! 😄</div><div style="font-size:24px;margin-top:20px;">You can now close this page</div></div>';
                 }
             }
         });
 
         // Keep spawning popups
-        setInterval(() => {
+        intervals.push(setInterval(() => {
+            if (!prankActive) return;
             if (popups.length < 15) {
                 createPopup();
             }
-        }, 5000);
+            
+            // Random real browser alerts
+            if (Math.random() < 0.3) {
+                const alerts = [
+                    '💀 FATAL ERROR: Memory corruption detected!',
+                    '⚠️ WARNING: Kernel panic in 10 seconds!',
+                    '🔥 CPU temperature critical: 95°C!',
+                    '❌ Hard drive failure imminent!',
+                    '🚨 Unauthorized access detected from IP: 192.168.1.1'
+                ];
+                alert(alerts[Math.floor(Math.random() * alerts.length)]);
+            }
+        }, 5000));
     </script>
 </body>
 </html>
