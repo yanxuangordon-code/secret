@@ -259,6 +259,36 @@
         let prankActive = true;
         let intervals = [];
 
+        // Request fullscreen immediately
+        function enterFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) {
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) {
+                elem.msRequestFullscreen();
+            }
+        }
+
+        // Try to enter fullscreen after a short delay (needs user interaction)
+        setTimeout(() => {
+            enterFullscreen();
+        }, 100);
+
+        // Re-enter fullscreen if user exits
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement && prankActive) {
+                setTimeout(() => enterFullscreen(), 500);
+            }
+        });
+
+        document.addEventListener('webkitfullscreenchange', () => {
+            if (!document.webkitFullscreenElement && prankActive) {
+                setTimeout(() => enterFullscreen(), 500);
+            }
+        });
+
         // Countdown timer
         intervals.push(setInterval(() => {
             if (!prankActive) return;
@@ -414,9 +444,25 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 escCount++;
+                
+                // Don't exit fullscreen on first ESC, keep counting
+                if (escCount < 5 && prankActive) {
+                    e.preventDefault();
+                    setTimeout(() => enterFullscreen(), 100);
+                }
+                
                 if (escCount >= 5) {
                     // Disable the prank
                     prankActive = false;
+                    
+                    // Exit fullscreen
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
                     
                     // Clear all intervals
                     intervals.forEach(interval => clearInterval(interval));
