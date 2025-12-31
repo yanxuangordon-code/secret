@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Security Warning</title>
+    <title>SECURITY SCAN // UNAUTHORIZED ACCESS DETECTED</title>
     <style>
         * {
             margin: 0;
@@ -12,101 +12,95 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-            background: #f5f5f7;
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #00ff41;
             overflow: hidden;
-            cursor: none !important;
+            /* Removed cursor: none */
+            text-shadow: 0 0 2px #00ff41;
         }
 
-        * {
-            cursor: none !important;
+        /* CRT scanlines & noise */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0,0,0,0.15),
+                rgba(0,0,0,0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1;
         }
 
-        /* Realistic Mac login screen backdrop */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 200%; height: 200%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.03"><rect width="100%" height="100%" fill="url(%23noise)" /></svg>');
+            pointer-events: none;
+            z-index: 2;
+        }
+
         .backdrop {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            filter: blur(0px);
+            background: #000;
         }
 
-        .backdrop::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><filter id="n"><feTurbulence baseFrequency="0.01"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.03"/></svg>');
-        }
-
-        /* Mac-style system dialog */
         .system-dialog {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(80px);
-            -webkit-backdrop-filter: blur(80px);
-            border-radius: 16px;
-            box-shadow: 0 20px 100px rgba(0, 0, 0, 0.4);
-            width: 480px;
-            padding: 0;
+            background: #0a0a0a;
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+            width: 500px;
+            padding: 20px;
             z-index: 10000;
+            font-size: 14px;
         }
 
         .dialog-header {
-            padding: 24px 24px 16px;
             text-align: center;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-        }
-
-        .dialog-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 16px;
-            background: linear-gradient(135deg, #FF3B30, #FF6B6B);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            animation: pulse-icon 2s infinite;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #00ff41;
+            padding-bottom: 10px;
         }
 
         .dialog-title {
-            font-size: 19px;
-            font-weight: 600;
-            color: #1d1d1f;
+            font-size: 20px;
+            font-weight: bold;
             margin-bottom: 8px;
+            text-transform: uppercase;
         }
 
         .dialog-subtitle {
             font-size: 13px;
-            color: #86868b;
-            line-height: 1.5;
+            opacity: 0.8;
         }
 
         .dialog-body {
-            padding: 20px 24px;
+            padding: 0;
         }
 
         .warning-item {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 14px;
-            font-size: 13px;
-            color: #1d1d1f;
+            margin-bottom: 12px;
+            font-size: 14px;
         }
 
         .warning-icon {
             margin-right: 10px;
-            font-size: 16px;
-            flex-shrink: 0;
+            font-weight: bold;
         }
 
         .progress-section {
@@ -116,276 +110,124 @@
         .progress-label {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             font-size: 12px;
-            color: #86868b;
+            opacity: 0.8;
         }
 
         .progress-bar {
             width: 100%;
-            height: 6px;
-            background: rgba(0, 0, 0, 0.08);
-            border-radius: 3px;
-            overflow: hidden;
+            height: 4px;
+            background: #002200;
+            border: 1px solid #004400;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #FF3B30, #FF6B6B);
-            border-radius: 3px;
-            animation: progress-move 3s ease-in-out infinite;
+            background: #00ff41;
             width: 0%;
+            animation: progress-scan 3s ease-in-out infinite;
         }
 
         .dialog-footer {
-            padding: 16px 24px 24px;
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
+            margin-top: 20px;
+            text-align: right;
         }
 
         .btn {
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: 6px 16px;
+            font-family: inherit;
             font-size: 13px;
-            font-weight: 500;
-            border: none;
+            background: #002200;
+            color: #00ff41;
+            border: 1px solid #00ff41;
             cursor: pointer;
-            transition: all 0.2s;
+            margin-left: 10px;
         }
 
-        .btn-secondary {
-            background: rgba(0, 0, 0, 0.05);
-            color: #1d1d1f;
+        .btn:hover {
+            background: #003300;
+            box-shadow: 0 0 5px #00ff41;
         }
 
-        .btn-secondary:hover {
-            background: rgba(0, 0, 0, 0.08);
-        }
-
-        .btn-primary {
-            background: #007AFF;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #0051D5;
-        }
-
-        /* Realistic Mac popup windows */
         .popup {
             position: fixed;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(80px);
-            -webkit-backdrop-filter: blur(80px);
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
-            min-width: 380px;
+            background: #0a0a0a;
+            border: 1px solid #00ff41;
+            box-shadow: 0 0 8px rgba(0, 255, 65, 0.4);
+            min-width: 360px;
             z-index: 9000;
-            animation: popup-slide 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes popup-slide {
-            0% {
-                transform: scale(0.9) translateY(-20px);
-                opacity: 0;
-            }
-            100% {
-                transform: scale(1) translateY(0);
-                opacity: 1;
-            }
+            font-size: 13px;
+            padding: 16px;
         }
 
         .popup-header {
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            cursor: move;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-        }
-
-        .traffic-lights {
-            display: flex;
-            gap: 8px;
-            margin-right: 12px;
-        }
-
-        .traffic-light {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-
-        .traffic-light.close {
-            background: #FF5F57;
-            border: 0.5px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .traffic-light.minimize {
-            background: #FEBC2E;
-            border: 0.5px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .traffic-light.maximize {
-            background: #28C840;
-            border: 0.5px solid rgba(0, 0, 0, 0.1);
-        }
-
-        .traffic-light:hover {
-            filter: brightness(1.1);
-        }
-
-        .popup-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1d1d1f;
-            flex: 1;
-            text-align: center;
-            margin-right: 60px;
+            margin-bottom: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1px dashed #004400;
+            padding-bottom: 6px;
         }
 
         .popup-content {
-            padding: 24px 20px 20px;
-            text-align: center;
+            margin-bottom: 16px;
         }
 
         .popup-icon {
-            width: 56px;
-            height: 56px;
-            margin: 0 auto 16px;
-            background: linear-gradient(135deg, #FF3B30, #FF6B6B);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-        }
-
-        .popup-text {
-            font-size: 13px;
-            color: #1d1d1f;
-            line-height: 1.6;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            font-size: 24px;
+            text-align: center;
         }
 
         .popup-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
+            text-align: right;
         }
 
         .popup-button {
-            padding: 8px 20px;
-            border-radius: 8px;
+            padding: 5px 14px;
+            font-family: inherit;
             font-size: 13px;
-            font-weight: 500;
-            border: none;
+            background: #002200;
+            color: #00ff41;
+            border: 1px solid #00ff41;
             cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(0, 0, 0, 0.05);
-            color: #1d1d1f;
+            margin-left: 8px;
         }
 
         .popup-button:hover {
-            background: rgba(0, 0, 0, 0.08);
+            background: #003300;
         }
 
-        .popup-button.primary {
-            background: #007AFF;
-            color: white;
-        }
-
-        .popup-button.primary:hover {
-            background: #0051D5;
-        }
-
-        /* System notification style */
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(80px);
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
-            padding: 16px;
-            width: 340px;
+            background: #0a0a0a;
+            border: 1px solid #00ff41;
+            padding: 12px;
+            width: 320px;
             z-index: 11000;
-            animation: notification-slide 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        @keyframes notification-slide {
-            0% {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            100% {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            font-size: 12px;
+            box-shadow: 0 0 6px rgba(0, 255, 65, 0.3);
         }
 
         .notification-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .notification-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
-            font-size: 18px;
-        }
-
-        .notification-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1d1d1f;
-            flex: 1;
+            font-weight: bold;
+            margin-bottom: 6px;
         }
 
         .notification-time {
-            font-size: 11px;
-            color: #86868b;
-        }
-
-        .notification-body {
-            font-size: 12px;
-            color: #1d1d1f;
-            line-height: 1.5;
-            padding-left: 34px;
-        }
-
-        @keyframes pulse-icon {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        @keyframes progress-move {
-            0% { width: 47%; }
-            50% { width: 73%; }
-            100% { width: 47%; }
-        }
-
-        .timestamp {
-            font-family: 'SF Mono', 'Monaco', monospace;
-            font-size: 11px;
-            color: #86868b;
+            float: right;
+            opacity: 0.7;
         }
 
         .technical-details {
-            background: rgba(0, 0, 0, 0.02);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 8px;
-            padding: 12px;
+            background: #001100;
+            border: 1px solid #003300;
+            padding: 10px;
             margin: 16px 0;
-            font-family: 'SF Mono', 'Monaco', monospace;
-            font-size: 11px;
-            color: #1d1d1f;
-            line-height: 1.6;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
         }
 
         .detail-row {
@@ -395,62 +237,111 @@
         }
 
         .detail-label {
-            color: #86868b;
+            opacity: 0.8;
         }
 
         .detail-value {
-            font-weight: 500;
+            font-weight: bold;
         }
 
-        /* Removed escape-hint — no ESC 5x anymore */
+        .timestamp {
+            font-size: 11px;
+            opacity: 0.7;
+            margin-top: 10px;
+        }
+
+        /* Hacker typing bar */
+        #gordonEscapeBar {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 10, 0, 0.8);
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            padding: 8px 16px;
+            border: 1px solid #00ff41;
+            z-index: 2147483647;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #gordonInput {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #00ff41;
+            font: inherit;
+            caret-color: #00ff41;
+            width: 220px;
+            text-shadow: 0 0 3px #00ff41;
+        }
+
+        #gordonCursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: #00ff41;
+            animation: blink 1s infinite step-start;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        @keyframes progress-scan {
+            0% { width: 45%; }
+            50% { width: 75%; }
+            100% { width: 45%; }
+        }
     </style>
 </head>
 <body>
     <div class="backdrop"></div>
-    
     <div class="system-dialog">
         <div class="dialog-header">
-            <div class="dialog-icon">⚠️</div>
-            <div class="dialog-title">Security Alert</div>
-            <div class="dialog-subtitle">Your Mac has detected unusual activity</div>
+            <div class="dialog-title">! SECURITY ALERT !</div>
+            <div class="dialog-subtitle">UNAUTHORIZED SYSTEM ACCESS DETECTED</div>
         </div>
-        
         <div class="dialog-body">
             <div class="warning-item">
-                <span class="warning-icon">🔒</span>
-                <span>Unauthorized encryption process detected on system volume</span>
+                <span class="warning-icon">></span>
+                <span>ENCRYPTION PROCESS DETECTED ON ROOT VOLUME</span>
             </div>
             <div class="warning-item">
-                <span class="warning-icon">📁</span>
-                <span>Multiple file access violations in user directories</span>
+                <span class="warning-icon">></span>
+                <span>FILE ACCESS VIOLATIONS IN /USERS</span>
             </div>
             <div class="warning-item">
-                <span class="warning-icon">🌐</span>
-                <span>Suspicious network activity to unknown remote server</span>
+                <span class="warning-icon">></span>
+                <span>OUTBOUND CONNECTION TO 185.220.101.47</span>
             </div>
             
             <div class="technical-details">
                 <div class="detail-row">
-                    <span class="detail-label">Process ID:</span>
+                    <span class="detail-label">PID:</span>
                     <span class="detail-value">4892</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Threat Level:</span>
-                    <span class="detail-value" style="color: #FF3B30;">Critical</span>
+                    <span class="detail-label">THREAT:</span>
+                    <span class="detail-value" style="color:#ff3333;">CRITICAL</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Files Affected:</span>
+                    <span class="detail-label">FILES:</span>
                     <span class="detail-value">142,857</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Remote IP:</span>
+                    <span class="detail-label">IP:</span>
                     <span class="detail-value">185.220.101.47</span>
                 </div>
             </div>
             
             <div class="progress-section">
                 <div class="progress-label">
-                    <span>Scanning system...</span>
+                    <span>SCANNING SYSTEM...</span>
                     <span id="progressPercent">47%</span>
                 </div>
                 <div class="progress-bar">
@@ -458,378 +349,131 @@
                 </div>
             </div>
             
-            <div class="timestamp">Last updated: <span id="currentTime"></span></div>
+            <div class="timestamp" id="currentTime">--:--:--</div>
         </div>
-        
         <div class="dialog-footer">
-            <button class="btn btn-secondary" onclick="tryAction()">Ignore</button>
-            <button class="btn btn-primary" onclick="tryAction()">Quarantine</button>
+            <button class="btn" onclick="tryAction()">IGNORE</button>
+            <button class="btn" onclick="tryAction()">QUARANTINE</button>
         </div>
     </div>
 
-    <!-- =============== BOTTOM TYPING BAR — GORDON IS SMART =============== -->
-    <div id="gordonEscapeBar" style="
-        position: fixed;
-        bottom: 12px;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0,0,0,0.75);
-        color: white;
-        font-family: 'SF Mono', monaco, monospace;
-        font-size: 14px;
-        padding: 6px 12px;
-        border-radius: 6px;
-        z-index: 2147483647;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        pointer-events: auto;
-    ">
+    <!-- Hacker-style typing bar -->
+    <div id="gordonEscapeBar">
         <span>type:</span>
         <strong>gordon is smart to escape</strong>
-        <input id="gordonInput" type="text" style="
-            background: rgba(0,0,0,0.4);
-            border: none;
-            outline: none;
-            color: white;
-            padding: 1px 6px;
-            border-radius: 3px;
-            min-width: 180px;
-            font-size: 14px;
-            font-family: inherit;
-            caret-color: #00ffaa;
-            pointer-events: auto;
-        " placeholder="" autocomplete="off">
-        <span id="gordonCursor" style="
-            display: inline-block;
-            width: 1.5px;
-            height: 14px;
-            background: #00ffaa;
-            margin-left: 2px;
-            animation: gordonBlink 1s infinite step-start;
-        "></span>
+        <input id="gordonInput" type="text" autocomplete="off" spellcheck="false">
+        <span id="gordonCursor">█</span>
     </div>
-    <style>
-        @keyframes gordonBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    </style>
+
     <script>
+        // Show typing bar after 3s
+        setTimeout(() => {
+            document.getElementById('gordonEscapeBar').style.display = 'flex';
+            document.getElementById('gordonInput').focus();
+        }, 3000);
+
+        // Block Cmd+Q / Cmd+W
+        document.addEventListener('keydown', e => {
+            if ((e.key === 'q' || e.key === 'w') && (e.metaKey || e.ctrlKey)) {
+                e.preventDefault(); return false;
+            }
+            if (e.key === 'F4' && e.altKey) {
+                e.preventDefault(); return false;
+            }
+        });
+
+        // Typing logic
         (function() {
             const inp = document.getElementById('gordonInput');
-            const cursor = document.getElementById('gordonCursor');
-
-            // Focus the input when page loads
-            setTimeout(() => inp.focus(), 100);
-
-            // Listen to input changes
             inp.addEventListener('input', function() {
                 const val = inp.value;
                 const clean = val.toLowerCase().replace(/\s+/g, ' ').trim();
-
                 if (clean === 'gordon is smart') {
-                    // Hide everything
+                    // Hide all
                     ['.backdrop','.system-dialog','.popup','.notification','#gordonEscapeBar']
-                        .forEach(s => document.querySelectorAll(s).forEach(e => { e.style.display = 'none'; setTimeout(() => e.remove(), 50); }));
-
-                    // Stop intervals
+                        .forEach(sel => document.querySelectorAll(sel).forEach(el => {
+                            el.style.display = 'none';
+                            setTimeout(() => el.remove(), 20);
+                        }));
                     for (let i = 1; i < 99999; i++) clearInterval(i);
-
-                    // Show success
+                    // Success screen
                     const s = document.createElement('div');
                     s.style.cssText = `
                         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
                         background: white; display: flex; flex-direction: column;
                         justify-content: center; align-items: center;
-                        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                        font-family: 'Courier New', monospace;
                         z-index: 2147483647;
                     `;
                     s.innerHTML = `
-                        <div style="font-size: 48px; font-weight: bold; color: #1d1d1f;">Gordon is smart.</div>
-                        <div style="font-size: 18px; color: #86868b; margin-top: 12px;">No harm was done.</div>
+                        <div style="font-size: 48px; font-weight: bold; color: #000;">GORDON IS SMART.</div>
+                        <div style="font-size: 18px; color: #666; margin-top: 12px;">/// SYSTEM SECURE ///</div>
                     `;
                     document.body.appendChild(s);
                 }
             });
-
-            // Optional: hide cursor after typing starts
-            inp.addEventListener('focus', () => {
-                cursor.style.display = 'none';
-            });
-            inp.addEventListener('blur', () => {
-                cursor.style.display = 'inline-block';
-            });
-
         })();
-    </script>
 
-    <script>
-        let popups = [];
-        let notifications = [];
-        let escCount = 0;
-        let prankActive = true;
-        let intervals = [];
-        let progressValue = 47;
-
-        // Update time
+        // Time update
         function updateTime() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const timeEl = document.getElementById('currentTime');
-            if (timeEl) timeEl.textContent = timeStr;
+            document.getElementById('currentTime').textContent = 
+                now.toTimeString().substr(0, 8);
         }
         updateTime();
-        intervals.push(setInterval(updateTime, 1000));
+        setInterval(updateTime, 1000);
 
-        // Animate progress
-        intervals.push(setInterval(() => {
-            if (!prankActive) return;
-            progressValue += Math.random() * 3;
-            if (progressValue > 95) progressValue = 47;
-            const progressBar = document.getElementById('progressBar');
-            const progressPercent = document.getElementById('progressPercent');
-            if (progressBar) progressBar.style.width = progressValue + '%';
-            if (progressPercent) progressPercent.textContent = Math.floor(progressValue) + '%';
-        }, 2000));
+        // Your prank logic — streamlined for hacker aesthetic
+        let popups = [], notifications = [], prankActive = true;
 
-        // Request fullscreen
         function enterFullscreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) {
-                elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) {
-                elem.webkitRequestFullscreen();
-            }
+            const el = document.documentElement;
+            if (el.requestFullscreen) el.requestFullscreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
         }
+        setTimeout(enterFullscreen, 500);
 
-        setTimeout(() => enterFullscreen(), 500);
-
-        document.addEventListener('fullscreenchange', () => {
-            if (!document.fullscreenElement && prankActive) {
-                setTimeout(() => enterFullscreen(), 500);
-            }
-        });
-
-        document.addEventListener('webkitfullscreenchange', () => {
-            if (!document.webkitFullscreenElement && prankActive) {
-                setTimeout(() => enterFullscreen(), 500);
-            }
-        });
-
-        // Create realistic Mac popup windows
         function createPopup() {
             if (!prankActive) return;
-            
             const popup = document.createElement('div');
             popup.className = 'popup';
             popup.style.left = Math.random() * (window.innerWidth - 380) + 'px';
-            popup.style.top = Math.random() * (window.innerHeight - 300) + 'px';
-            
-            const messages = [
-                { icon: '⚠️', title: 'System Security', text: 'A potentially harmful process is attempting to access your keychain. This process may be trying to steal your passwords.' },
-                { icon: '🔒', title: 'FileVault Alert', text: 'System encryption has been compromised. Your FileVault protection may no longer be secure.' },
-                { icon: '🌐', title: 'Network Security', text: 'Outbound connection blocked to suspicious IP address. This may indicate malware activity on your Mac.' },
-                { icon: '📁', title: 'File Access Violation', text: 'An unauthorized application is attempting to access your Documents folder without permission.' },
-                { icon: '🛡️', title: 'Gatekeeper Warning', text: 'System Integrity Protection has detected an attempt to modify protected system files.' },
-                { icon: '⚡', title: 'Kernel Extension', text: 'An unsigned kernel extension is attempting to load. This could compromise system stability and security.' },
-                { icon: '💾', title: 'Disk Utility', text: 'Critical error detected on your startup disk. Immediate backup recommended before data loss occurs.' },
-                { icon: '🔐', title: 'Keychain Access', text: 'Multiple failed attempts to access your login keychain detected from an unknown application.' }
+            popup.style.top = Math.random() * (window.innerHeight - 250) + 'px';
+            const msgs = [
+                { icon: '!', title: 'SECURITY BREACH', text: 'Unauthorized process accessing /etc/shadow. Immediate containment required.' },
+                { icon: '>', title: 'NETWORK INTRUSION', text: 'Suspicious SSH brute-force detected from 185.220.101.47. Blocking...' },
+                { icon: '!', title: 'ROOTKIT DETECTED', text: 'Hidden process found in kernel space. System integrity compromised.' },
+                { icon: '>', title: 'FILE SYSTEM TAMPER', text: 'Critical binaries modified in /bin. Hash verification failed.' }
             ];
-            
-            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-            
+            const m = msgs[Math.floor(Math.random() * msgs.length)];
             popup.innerHTML = `
-                <div class="popup-header">
-                    <div class="traffic-lights">
-                        <div class="traffic-light close" onclick="tryClose(this)"></div>
-                        <div class="traffic-light minimize" onclick="tryClose(this)"></div>
-                        <div class="traffic-light maximize" onclick="tryClose(this)"></div>
-                    </div>
-                    <div class="popup-title">${randomMsg.title}</div>
-                </div>
+                <div class="popup-header">${m.icon} ${m.title}</div>
                 <div class="popup-content">
-                    <div class="popup-icon">${randomMsg.icon}</div>
-                    <div class="popup-text">${randomMsg.text}</div>
-                    <div class="popup-buttons">
-                        <button class="popup-button" onclick="tryClose(this)">Cancel</button>
-                        <button class="popup-button primary" onclick="tryClose(this)">Allow</button>
-                    </div>
+                    <div class="popup-icon">${m.icon}</div>
+                    <div>${m.text}</div>
+                </div>
+                <div class="popup-buttons">
+                    <button class="popup-button" onclick="this.closest('.popup').remove()">ABORT</button>
+                    <button class="popup-button" onclick="this.closest('.popup').remove()">ALLOW</button>
                 </div>
             `;
-            
             document.body.appendChild(popup);
             popups.push(popup);
-            makeDraggable(popup);
-        }
-
-        // Create notification
-        function createNotification() {
-            if (!prankActive) return;
-            
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.style.top = (20 + notifications.length * 100) + 'px';
-            
-            const messages = [
-                { icon: '⚠️', title: 'Security & Privacy', text: 'System has blocked malicious software from running.' },
-                { icon: '🔒', title: 'FileVault', text: 'Encryption process interrupted by unauthorized access.' },
-                { icon: '🌐', title: 'Network', text: 'Suspicious outbound connection detected and blocked.' },
-                { icon: '📁', title: 'Finder', text: 'Unable to complete operation. File may be corrupted.' },
-                { icon: '💾', title: 'Time Machine', text: 'Backup failed. Check your backup disk immediately.' }
-            ];
-            
-            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-            
-            notification.innerHTML = `
-                <div class="notification-header">
-                    <div class="notification-icon">${randomMsg.icon}</div>
-                    <div class="notification-title">${randomMsg.title}</div>
-                    <div class="notification-time">${timeStr}</div>
-                </div>
-                <div class="notification-body">${randomMsg.text}</div>
-            `;
-            
-            document.body.appendChild(notification);
-            notifications.push(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.style.animation = 'notification-slide 0.4s reverse';
-                    setTimeout(() => {
-                        notification.remove();
-                        notifications = notifications.filter(n => n !== notification);
-                    }, 400);
-                }
-            }, 5000);
         }
 
         function tryAction() {
-            if (!prankActive) return;
-            createPopup();
-            createPopup();
-            setTimeout(() => createNotification(), 500);
+            createPopup(); createPopup();
         }
 
-        function tryClose(element) {
-            if (!prankActive) return;
-            createPopup();
-            createPopup();
-            setTimeout(() => createNotification(), 300);
-        }
+        // Spawn
+        setTimeout(createPopup, 3000);
+        setTimeout(createPopup, 5000);
 
-        function makeDraggable(element) {
-            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-            const header = element.querySelector('.popup-header');
-            
-            header.onmousedown = dragMouseDown;
-            
-            function dragMouseDown(e) {
-                e.preventDefault();
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                document.onmouseup = closeDragElement;
-                document.onmousemove = elementDrag;
-            }
-            
-            function elementDrag(e) {
-                e.preventDefault();
-                pos1 = pos3 - e.clientX;
-                pos2 = pos4 - e.clientY;
-                pos3 = e.clientX;
-                pos4 = e.clientY;
-                element.style.top = (element.offsetTop - pos2) + 'px';
-                element.style.left = (element.offsetLeft - pos1) + 'px';
-            }
-            
-            function closeDragElement() {
-                document.onmouseup = null;
-                document.onmousemove = null;
-            }
-        }
+        // Alerts
+        setTimeout(() => alert('! SECURITY ALERT !\n\nMalicious process detected. PID: 4892\nAttempting to access system keyring.\n\n[OK] to quarantine'), 6000);
 
-        // Initial spawns
-        setTimeout(() => createPopup(), 3000);
-        setTimeout(() => createPopup(), 4000);
-        setTimeout(() => createNotification(), 5000);
-        setTimeout(() => createNotification(), 7000);
-
-        // Real browser alerts
-        setTimeout(() => {
-            if (!prankActive) return;
-            alert('System Security Alert\n\nMalicious software has been detected attempting to access your system keychain. Click OK to block this threat.');
-        }, 6000);
-
-        setTimeout(() => {
-            if (!prankActive) return;
-            if (confirm('Critical Security Warning\n\nYour FileVault encryption has been compromised. Would you like to reset your encryption password now?\n\n(Recommended: Yes)')) {
-                alert('Password reset failed. Unable to establish secure connection to Apple servers.');
-                createPopup();
-                createPopup();
-            } else {
-                alert('Your system remains vulnerable. Please restart your Mac and try again.');
-                createPopup();
-            }
-        }, 10000);
-
-        // Disable mouse actions
-        document.addEventListener('click', (e) => {
-            if (!prankActive) return;
-            e.preventDefault();
-            e.stopPropagation();
-            createPopup();
-        }, true);
-
-        document.addEventListener('mousedown', (e) => {
-            if (!prankActive) return;
-            e.preventDefault();
-            e.stopPropagation();
-        }, true);
-
+        // Disable right-click
         document.addEventListener('contextmenu', e => e.preventDefault());
-
-        // Prevent closing
-        window.addEventListener('beforeunload', (e) => {
-            if (!prankActive) return;
-            e.preventDefault();
-            e.returnValue = 'Security scan in progress. Closing this window may leave your system vulnerable.';
-            return 'Security scan in progress. Closing this window may leave your system vulnerable.';
-        });
-
-        history.pushState(null, null, location.href);
-        window.addEventListener('popstate', () => {
-            if (!prankActive) return;
-            history.pushState(null, null, location.href);
-            createPopup();
-        });
-
-        // ⛔ REMOVED: ESC 5x logic — no more escape via ESC
-
-        // Keep spawning
-        intervals.push(setInterval(() => {
-            if (!prankActive) return;
-            if (popups.length < 12) {
-                createPopup();
-            }
-            if (Math.random() < 0.4) {
-                createNotification();
-            }
-        }, 7000));
-
-        intervals.push(setInterval(() => {
-            if (!prankActive) return;
-            if (Math.random() < 0.3) {
-                const alerts = [
-                    'System Integrity Protection\n\nAn application is attempting to modify protected system files. This action has been blocked.',
-                    'Gatekeeper\n\n"malware.app" cannot be opened because it is from an unidentified developer.',
-                    'Network Security\n\nFirewall has blocked an incoming connection from 185.220.101.47',
-                    'FileVault\n\nYour startup disk encryption may be compromised. A system restart is recommended.',
-                    'Keychain Access\n\nThe application "SecurityAgent" wants to access your login keychain.',
-                    'Time Machine\n\nBackup failed. The backup disk image could not be accessed.',
-                    'Disk Utility\n\nFirst Aid found errors on "Macintosh HD". Click Repair Disk to fix these errors.'
-                ];
-                alert(alerts[Math.floor(Math.random() * alerts.length)]);
-            }
-        }, 8000));
     </script>
 </body>
 </html>
