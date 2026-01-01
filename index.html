@@ -16,7 +16,6 @@
             background: #000;
             color: #00ff41;
             overflow: hidden;
-            /* Removed cursor: none */
             text-shadow: 0 0 2px #00ff41;
         }
 
@@ -297,6 +296,92 @@
             50% { width: 75%; }
             100% { width: 45%; }
         }
+
+        /* Terminal command line */
+        #terminalLine {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 10, 0, 0.8);
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            padding: 8px 16px;
+            border: 1px solid #00ff41;
+            z-index: 2147483647;
+            display: none;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #terminalPrompt {
+            color: #00ff41;
+            font-weight: bold;
+        }
+
+        #terminalOutput {
+            color: #00ff41;
+        }
+
+        /* Exploding ASCII art */
+        #asciiArt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            color: #00ff41;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            z-index: 2147483647;
+            display: none;
+            overflow: hidden;
+            text-align: center;
+            padding: 20px;
+            white-space: pre;
+        }
+
+        #asciiArt div {
+            animation: explode 2s ease-out forwards;
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        @keyframes explode {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            70% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        #successMessage {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+            color: #00ff41;
+            z-index: 2147483648;
+            display: none;
+            text-shadow: 0 0 10px #00ff41;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { text-shadow: 0 0 10px #00ff41; }
+            50% { text-shadow: 0 0 25px #00ff41, 0 0 30px #00ff41; }
+        }
     </style>
 </head>
 <body>
@@ -365,56 +450,159 @@
         <span id="gordonCursor">█</span>
     </div>
 
+    <!-- Terminal command line -->
+    <div id="terminalLine">
+        <span id="terminalPrompt">> </span>
+        <span id="terminalOutput"></span>
+    </div>
+
+    <!-- Exploding ASCII art -->
+    <div id="asciiArt"></div>
+
+    <!-- Success message -->
+    <div id="successMessage">GORDON IS SMART.</div>
+
     <script>
-        // Show typing bar after 3s
+        // === BEEP FUNCTION (Web Audio API) ===
+        function beep() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 800;
+                gain.gain.value = 0.1;
+                osc.start();
+                gain.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.1);
+                osc.stop(ctx.currentTime + 0.1);
+            } catch (e) {
+                // Silent fail on iOS or blocked contexts
+            }
+        }
+
+        // === FAKE TERMINAL ===
+        setTimeout(() => {
+            document.getElementById('terminalLine').style.display = 'block';
+            const terminalOutput = document.getElementById('terminalOutput');
+            const terminalPrompt = document.getElementById('terminalPrompt');
+            
+            // Simulate typing "help"
+            let cmd = '';
+            let helpText = `help      - show available commands
+scan      - run deep system scan
+exit      - attempt to exit (blocked)
+gordon    - ??
+`;
+            let i = 0;
+            const typeHelp = setInterval(() => {
+                if (i < helpText.length) {
+                    terminalOutput.textContent += helpText[i];
+                    if (helpText[i] !== '\n') beep();
+                    i++;
+                } else {
+                    clearInterval(typeHelp);
+                }
+            }, 50);
+        }, 2000);
+
+        // === SHOW TYPING BAR AFTER 3S ===
         setTimeout(() => {
             document.getElementById('gordonEscapeBar').style.display = 'flex';
             document.getElementById('gordonInput').focus();
         }, 3000);
 
-        // Block Cmd+Q / Cmd+W
+        // === BLOCK Cmd+Q / Cmd+W ===
         document.addEventListener('keydown', e => {
             if ((e.key === 'q' || e.key === 'w') && (e.metaKey || e.ctrlKey)) {
-                e.preventDefault(); return false;
+                e.preventDefault();
+                return false;
             }
             if (e.key === 'F4' && e.altKey) {
-                e.preventDefault(); return false;
+                e.preventDefault();
+                return false;
             }
         });
 
-        // Typing logic
+        // === TYPING LOGIC + BEEP + ESCAPE ===
         (function() {
             const inp = document.getElementById('gordonInput');
             inp.addEventListener('input', function() {
                 const val = inp.value;
+                
+                // Beep on every keypress
+                beep();
+                
                 const clean = val.toLowerCase().replace(/\s+/g, ' ').trim();
                 if (clean === 'gordon is smart') {
-                    // Hide all
-                    ['.backdrop','.system-dialog','.popup','.notification','#gordonEscapeBar']
+                    // Hide prank UI
+                    ['.backdrop','.system-dialog','.popup','.notification','#gordonEscapeBar','#terminalLine']
                         .forEach(sel => document.querySelectorAll(sel).forEach(el => {
                             el.style.display = 'none';
-                            setTimeout(() => el.remove(), 20);
                         }));
-                    for (let i = 1; i < 99999; i++) clearInterval(i);
-                    // Success screen
-                    const s = document.createElement('div');
-                    s.style.cssText = `
-                        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                        background: white; display: flex; flex-direction: column;
-                        justify-content: center; align-items: center;
-                        font-family: 'Courier New', monospace;
-                        z-index: 2147483647;
+                    
+                    // Show ASCII art
+                    const ascii = document.getElementById('asciiArt');
+                    ascii.style.display = 'block';
+                    
+                    // Exploding ASCII: skull + explosion
+                    const art = `
+  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+  ███╗   ███╗ ██████╗ ██╗   ██╗███████╗████████╗███████╗██████╗ ██╗   ██╗███████╗██████╗ ███████╗██████╗ ██╗   ██╗███████╗██████╗ ███████╗██████╗ ██╗
+  ████╗ ████║██╔═══██╗██║   ██║██╔════╝╚══██╔══╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗██╔════╝██╔══██╗██║
+  ██╔████╔██║██║   ██║██║   ██║███████╗   ██║   █████╗  ██████╔╝██║   ██║█████╗  ██████╔╝█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝█████╗  ██████╔╝██║
+  ██║╚██╔╝██║██║   ██║██║   ██║╚════██║   ██║   ██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗██╔══╝  ██╔══██╗╚═╝
+  ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║   ██║   ███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║███████╗██║  ██║██╗
+  ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝
+  ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+  
+                    ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+                    ███╗   ███╗ ██████╗ ██╗   ██╗███████╗████████╗███████╗██████╗ ██╗   ██╗███████╗██████╗ ███████╗██████╗ ██╗   ██╗███████╗██████╗ ██╗
+                    ████╗ ████║██╔═══██╗██║   ██║██╔════╝╚══██╔══╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗██║
+                    ██╔████╔██║██║   ██║██║   ██║███████╗   ██║   █████╗  ██████╔╝██║   ██║█████╗  ██████╔╝█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝██║
+                    ██║╚██╔╝██║██║   ██║██║   ██║╚════██║   ██║   ██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗╚═╝
+                    ██║ ╚═╝ ██║╚██████╔╝╚██████╔╝███████║   ██║   ███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║██╗
+                    ╚═╝     ╚═╝ ╚═════╝  ╚═════╝ ╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝╚═╝
+                    ▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀▀
+
+  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
+  ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████████████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████████████████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ████████████████████████████████████████████████▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓
+  ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
                     `;
-                    s.innerHTML = `
-                        <div style="font-size: 48px; font-weight: bold; color: #000;">GORDON IS SMART.</div>
-                        <div style="font-size: 18px; color: #666; margin-top: 12px;">/// SYSTEM SECURE ///</div>
-                    `;
-                    document.body.appendChild(s);
+                    
+                    ascii.textContent = '';
+                    const lines = art.split('\n');
+                    lines.forEach((line, idx) => {
+                        setTimeout(() => {
+                            const div = document.createElement('div');
+                            div.textContent = line;
+                            ascii.appendChild(div);
+                            if (idx > 30) beep(); // Beep during explosion
+                        }, idx * 10);
+                    });
+                    
+                    // Show success message after ASCII
+                    setTimeout(() => {
+                        document.getElementById('successMessage').style.display = 'block';
+                    }, 1200);
                 }
             });
         })();
 
-        // Time update
+        // === TIME UPDATE ===
         function updateTime() {
             const now = new Date();
             document.getElementById('currentTime').textContent = 
@@ -423,7 +611,7 @@
         updateTime();
         setInterval(updateTime, 1000);
 
-        // Your prank logic — streamlined for hacker aesthetic
+        // === PRANK LOGIC ===
         let popups = [], notifications = [], prankActive = true;
 
         function enterFullscreen() {
